@@ -4,12 +4,11 @@ from PIL import ImageTk, Image
 from pathlib import Path
 
 
-<<<<<<< ours
-
-=======
 class MainScreen(tk.Canvas):
     def __init__(self, parent):
         tk.Canvas.__init__(self,parent,height=650,width=1000)
+        self.vol_val = 100
+        self.sfx_val = 100
         # import and draw background
         self.dir = str(Path(__file__).resolve().parent) + '\\img\\img1.png'
         self.image = Image.open(self.dir)
@@ -17,21 +16,22 @@ class MainScreen(tk.Canvas):
         self.place(x=0,y=0)
         self.create_image(0,0,anchor=tk.NW,image=self.tkimg)
         # create buttons
-        self.btn_start = tk.Button(self, text="Start",command=lambda:Start(parent),font=('calibre',15,'normal'))
+        self.btn_start = tk.Button(self, text="Start",command=lambda:Start(self),font=('calibre',15,'normal'))
         self.btn_start.place_configure(x=400,y=250,width=150,height=60)
         
-        self.btn_load = tk.Button(self, text="Load",command=lambda:Load(parent),font=('calibre',15,'normal'))
+        self.btn_load = tk.Button(self, text="Load",command=lambda:Load(self),font=('calibre',15,'normal'))
         self.btn_load.place_configure(x=400,y=320,width=150,height=60)
 
-        self.btn_setting = tk.Button(self, text="Setting",command=lambda:Setting(parent),font=('calibre',15,'normal'))
+        self.btn_setting = tk.Button(self, text="Setting",command=lambda:Setting(self),font=('calibre',15,'normal'))
         self.btn_setting.place_configure(x=400,y=390,width=150,height=60)
 
-        self.btn_credit = tk.Button(self, text="Credit",command=lambda:Credit(parent),font=('calibre',15,'normal'))
+        self.btn_credit = tk.Button(self, text="Credit",command=lambda:Credit(self),font=('calibre',15,'normal'))
         self.btn_credit.place_configure(x=400,y=460,width=150,height=60)
         
         self.btn_quit = tk.Button(self, text="Quit",command=lambda:self.Quit(parent),font=('calibre',15,'normal'))
         self.btn_quit.place_configure(x=400,y=530,width=150,height=60)
 
+        
     def Quit(self, master):
             # ask if wanna quit
             check = mb.askyesno(title='Quitting?',message='Are you sure about that?')
@@ -74,8 +74,10 @@ class Start(tk.Canvas):
         self.bind('<Button-1>',self.ChangeScene)
 
     def back(self):
-        # check if progress is saved? remind if havent (WIP)
-        self.place_forget()
+        # check if progress is saved? remind if havent
+        check = mb.askyesno(title='Back to main menu?',message='Game progress is not saved automatically and will be lost. Do you wanna proceed?')
+        if check:
+            self.place_forget()
 
     # plan: save/load option, settings, skip (?), probs easter eggs (last priority) (WIP)
     def Game_UI(self,parent):
@@ -118,6 +120,20 @@ class Start(tk.Canvas):
 
         self.pos += 1
 
+
+    def Skip(self): #config char and/or bg
+        # bg
+        image = self.UpdateImage('img4.png')
+        self.tkimg = ImageTk.PhotoImage(image)
+        self.create_image(0,0,anchor=tk.NW,image=self.tkimg)
+        #char
+        image = self.UpdateImage('img3.png')
+        self.tkimg2 = ImageTk.PhotoImage(image)
+        self.character = tk.Canvas(self,height=343,width=650)
+        self.character.place(x=150,y=100)
+        self.character.create_image(0,0,anchor=tk.NW,image=self.tkimg2)
+        #dialog
+        self.T.insert('1.0', "Oh? Are you skipping? ")
         #char
 
         #dialog
@@ -193,8 +209,8 @@ class Setting(tk.Canvas):
         slider_label1.place_configure(x=250,y=350)
         slider_label2.place_configure(x=250,y=400)
 
-        curr_val1 = tk.IntVar(self,value=100)
-        curr_val2 = tk.IntVar(self,value=100)
+        curr_val1 = tk.IntVar(self,value=parent.vol_val)
+        curr_val2 = tk.IntVar(self,value=parent.sfx_val)
         self.vol_slider = ttk.Scale(self,from_=0,to=100,orient='horizontal',variable=curr_val1,command=self.vol_slider_changed)
         self.sfx_slider = ttk.Scale(self,from_=0,to=100,orient='horizontal',variable=curr_val2,command=self.sfx_slider_changed)
         
@@ -207,11 +223,14 @@ class Setting(tk.Canvas):
         self.sfx_val.place_configure(x=550,y=405)
 
         # create buttons
-        self.btn_back = tk.Button(self, text="Back",command=lambda:self.back(),font=('calibre',15,'normal'))
+        self.btn_back = tk.Button(self, text="Back",command=lambda:self.back(parent),font=('calibre',15,'normal'))
         self.btn_back.place_configure(x=30,y=30,width=150,height=60) 
 
-    def back(self):
+    def back(self,parent):
         self.place_forget()
+        parent.vol_val=int(self.vol_slider.get())
+        parent.sfx_val=int(self.sfx_slider.get())
+
 
     def vol_slider_changed(self, *args): 
         self.vol_val.config(text=int(self.vol_slider.get()))
