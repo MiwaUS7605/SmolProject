@@ -1,3 +1,3 @@
 Hello? What's your name?|img1.png|img2.png
-My name is A
+My name is A|img1.png|img5.png
 Shin-ne|img4.png|img3.png
