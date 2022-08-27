@@ -3,7 +3,7 @@ from tkinter import filedialog, messagebox as mb, ttk
 from PIL import ImageTk, Image  
 from pathlib import Path
 
-# hallo wan :D
+
 class MainScreen(tk.Canvas):
     def __init__(self, parent):
         tk.Canvas.__init__(self,parent,height=650,width=1000)
