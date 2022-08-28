@@ -2,13 +2,21 @@ import tkinter as tk
 from tkinter import filedialog, messagebox as mb, ttk
 from PIL import ImageTk, Image  
 from pathlib import Path
+import pygame 
 
-#Something...
+# vậy mình tạo file lưu để theo tên slot? rồi sẽ là dòng scene_n.txt? 
+# @@ lạ ghê t cũng có r mà? có cần update k
+# Nhớ tải pygame rùi mà nhỉ. Tự nhiên nó hiện "Import "pygame" could not be resolved" @@
+
 class MainScreen(tk.Canvas):
     def __init__(self, parent):
         tk.Canvas.__init__(self,parent,height=650,width=1000)
         self.vol_val = 100
         self.sfx_val = 100
+        # play music
+        pygame.mixer.init()
+        pygame.mixer.music.load(filename)
+        
         # import and draw background
         self.dir = str(Path(__file__).resolve().parent) + '\\img\\img1.png'
         self.image = Image.open(self.dir)
