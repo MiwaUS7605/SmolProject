@@ -1,5 +1,4 @@
-
-# import pygame 
+import pygame 
 import tkinter as tk
 from tkinter import filedialog, messagebox as mb, ttk
 from PIL import ImageTk, Image  
@@ -12,9 +11,9 @@ class MainScreen(tk.Canvas):
         self.sfx_val = 100
         # play music
         url1 = str(Path(__file__).resolve().parent) + '\\music\\dokitheme.mp3'
-        # pygame.mixer.init()
-        # pygame.mixer.music.load(url1)
-        # pygame.mixer.music.play()
+        pygame.mixer.init()
+        pygame.mixer.music.load(url1)
+        pygame.mixer.music.play()
         
         # import and draw background
         self.dir = str(Path(__file__).resolve().parent) + '\\img\\img1.png'
@@ -56,8 +55,8 @@ class Start(tk.Canvas):
         image = Image.open(dir)
         self.tkimg = ImageTk.PhotoImage(image)
         self.place(x=0,y=0)
-        # self.create_image(0,0,anchor=tk.NW,image=self.tkimg)    
-
+        self.create_image(0,0,anchor=tk.NW,image=self.tkimg)    
+            
          # import and draw character
         dir = str(Path(__file__).resolve().parent) + '\\img\\img2.png'
         image = Image.open(dir)
@@ -65,6 +64,11 @@ class Start(tk.Canvas):
         self.character = tk.Canvas(self,height=343,width=650)
         self.character.place(x=150,y=100)
         # self.character.create_image(0,0,anchor=tk.NW,image=self.tkimg2) 
+
+        url2 = str(Path(__file__).resolve().parent) + '\\music\\dokigameplay.mp3'
+        pygame.mixer.init()
+        pygame.mixer.music.load(url2)
+        pygame.mixer.music.play()
 
         # dialog box
         self.T = tk.Text(self, height = 5, width = 105)
@@ -85,6 +89,10 @@ class Start(tk.Canvas):
         check = mb.askyesno(title='Back to main menu?',message='Game progress is not saved automatically and will be lost. Do you wanna proceed?')
         if check:
             self.place_forget()
+            url1 = str(Path(__file__).resolve().parent) + '\\music\\dokitheme.mp3'
+            pygame.mixer.init()
+            pygame.mixer.music.load(url1)
+            pygame.mixer.music.play()
 
     # plan: save/load option, settings, skip (?), probs easter eggs (last priority) (WIP)
     def Game_UI(self,parent):
@@ -167,8 +175,8 @@ class Save(tk.Canvas):
         self.create_image(0,0,anchor=tk.NW,image=self.tkimg)      
 
         # plan: several slots to save game progress, probs easter eggs (last priority)  (WIP)
-        # à hie
-        # 
+        # okee có gì mai nhắn (gọi điện đe dọa)
+        # Sớm khi nào đi khi đó eyyy :)))
         cre = tk.Label(self, text= "Where do you wanna save?", font =("Courier", 15))
         cre.place_configure(x=30,y=120,width=900,height=40)
 
