@@ -1,3 +1,7 @@
-Hello? What's your name?|img1.png|img2.png
-My name is A|img1.png|img5.png
-Shin-ne|img4.png|img3.png
+A short girl with fluffy blonde hair just come to my table. She is pretty and cheerful|img1.png|black.png
+???: Hello? You may seem a bit lonely. What's your name?|img1.png|img2.png
+*My heart skip a bit. Girls never talk to me.
+Me: I'm Nathan. It is very nice to see you. Can I know yours?
+Syaro: My name is Syaro Kirima and I have a dream. |img1.png|img5.png
+Me: Oh? Is that line from a pathetic Jojo series?
+Syaro: Huh!? Shin-ne!!!|img4.png|img3.png

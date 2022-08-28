@@ -49,7 +49,7 @@ class Start(tk.Canvas):
         image = Image.open(dir)
         self.tkimg = ImageTk.PhotoImage(image)
         self.place(x=0,y=0)
-        self.create_image(0,0,anchor=tk.NW,image=self.tkimg)    
+        # self.create_image(0,0,anchor=tk.NW,image=self.tkimg)    
 
          # import and draw character
         dir = str(Path(__file__).resolve().parent) + '\\img\\img2.png'
@@ -57,11 +57,11 @@ class Start(tk.Canvas):
         self.tkimg2 = ImageTk.PhotoImage(image)
         self.character = tk.Canvas(self,height=343,width=650)
         self.character.place(x=150,y=100)
-        self.character.create_image(0,0,anchor=tk.NW,image=self.tkimg2) 
+        # self.character.create_image(0,0,anchor=tk.NW,image=self.tkimg2) 
 
         # dialog box
         self.T = tk.Text(self, height = 5, width = 105)
-        self.T.insert('0.1', "Hello! What's your name? ")
+        # self.T.insert('0.1', "Hello! What's your name? ")
         self.T.place_configure(x=30,y=450)
 
         # create buttons (place holder rn)
@@ -81,7 +81,7 @@ class Start(tk.Canvas):
 
     # plan: save/load option, settings, skip (?), probs easter eggs (last priority) (WIP)
     def Game_UI(self,parent):
-        fs = open(str(Path(__file__).resolve().parent) + '\\scripts\\scene0001.txt')
+        fs = open(str(Path(__file__).resolve().parent) + '\\scripts\\scene0002.txt')
         self.scripts = fs.readlines()
         self.pos = 0
 
@@ -180,7 +180,15 @@ class Load(tk.Canvas): #similar to read file, do after Save to know file (WIP)
         # plan: several slots to load game progress, probs easter eggs (last priority)  (WIP)
         cre = tk.Label(self, text= "Where do you wanna continue from?", font =("Courier", 15))
         cre.place_configure(x=30,y=120,width=900,height=40)
-
+        
+        self.loadspace = []
+        count=0
+        for j in range(170,500,150):
+            for i in range(30,900,300):
+                self.create_rectangle(i,j,i+300,j+150,width=4)
+                self.loadspace.append(tk.Button(self, text="Load_" + str(count),command=lambda:Start(parent),font=('calibre',15,'normal')))
+                self.loadspace[count].place_configure(x=i,y=j,width=300,height=150)
+                count += 1
         # create buttons
         self.btn_back = tk.Button(self, text="Back",command=lambda:self.back(),font=('calibre',15,'normal'))
         self.btn_back.place_configure(x=30,y=30,width=150,height=60)

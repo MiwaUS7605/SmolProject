@@ -1,0 +1,2 @@
+scripts/scence002.txt
+0
