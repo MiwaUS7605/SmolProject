@@ -1,3 +1,4 @@
+
 import tkinter as tk
 from tkinter import filedialog, messagebox as mb, ttk
 from PIL import ImageTk, Image  
@@ -5,8 +6,10 @@ from pathlib import Path
 import pygame 
 
 # vậy mình tạo file lưu để theo tên slot? rồi sẽ là dòng scene_n.txt? 
-# @@ lạ ghê t cũng có r mà? có cần update k
+# :P
 # Nhớ tải pygame rùi mà nhỉ. Tự nhiên nó hiện "Import "pygame" could not be resolved" @@
+# Update rùi á. Mà nó vẫn vậy
+
 
 class MainScreen(tk.Canvas):
     def __init__(self, parent):
