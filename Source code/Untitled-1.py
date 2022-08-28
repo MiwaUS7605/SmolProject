@@ -91,7 +91,7 @@ class Start(tk.Canvas):
         self.btn_load.place_configure(x=215,y=580,width=150,height=60)
         self.btn_setting = tk.Button(self, text="Setting",command=lambda:Setting(parent),font=('calibre',15,'normal'))
         self.btn_setting.place_configure(x=400,y=580,width=150,height=60) 
-        self.btn_skip = tk.Button(self, text="Skip",command=lambda:print("skippin'"),font=('calibre',15,'normal'))
+        self.btn_skip = tk.Button(self, text="Skip",command=lambda:self.Skip(),font=('calibre',15,'normal'))
         self.btn_skip.place_configure(x=800,y=580,width=150,height=60)    
 
     def UpdateImage(self, filename):
