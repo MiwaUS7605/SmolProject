@@ -1,15 +1,9 @@
 
+# import pygame 
 import tkinter as tk
 from tkinter import filedialog, messagebox as mb, ttk
 from PIL import ImageTk, Image  
 from pathlib import Path
-import pygame 
-
-# vậy mình tạo file lưu để theo tên slot? rồi sẽ là dòng scene_n.txt? 
-# :P
-# Nhớ tải pygame rùi mà nhỉ. Tự nhiên nó hiện "Import "pygame" could not be resolved" @@
-# Update rùi á. Mà nó vẫn vậy
-
 
 class MainScreen(tk.Canvas):
     def __init__(self, parent):
@@ -17,8 +11,10 @@ class MainScreen(tk.Canvas):
         self.vol_val = 100
         self.sfx_val = 100
         # play music
-        pygame.mixer.init()
-        pygame.mixer.music.load(filename)
+        url1 = str(Path(__file__).resolve().parent) + '\\music\\dokitheme.mp3'
+        # pygame.mixer.init()
+        # pygame.mixer.music.load(url1)
+        # pygame.mixer.music.play()
         
         # import and draw background
         self.dir = str(Path(__file__).resolve().parent) + '\\img\\img1.png'
@@ -155,6 +151,11 @@ class Start(tk.Canvas):
     # effects on screen canvas?
 
 
+# Chad walks
+# éc éc. Chắc thế thui. Mà code music cũng chỉ có như v. Khi vào gameplay thì chuyển bài khác. :p
+
+#Here we go again
+
 class Save(tk.Canvas):
     def __init__(self,parent):
         tk.Canvas.__init__(self,parent,height=650,width=1000)
@@ -166,8 +167,19 @@ class Save(tk.Canvas):
         self.create_image(0,0,anchor=tk.NW,image=self.tkimg)      
 
         # plan: several slots to save game progress, probs easter eggs (last priority)  (WIP)
+        # à hie
+        # 
         cre = tk.Label(self, text= "Where do you wanna save?", font =("Courier", 15))
         cre.place_configure(x=30,y=120,width=900,height=40)
+
+        self.loadspace = []
+        count=0
+        for j in range(170,500,150):
+            for i in range(30,900,300):
+                self.create_rectangle(i,j,i+300,j+150,width=4)
+                self.loadspace.append(tk.Button(self, text="Save_" + str(count),command=lambda:self.back(),font=('calibre',15,'normal')))
+                self.loadspace[count].place_configure(x=i,y=j,width=300,height=150)
+                count += 1
 
         # create buttons
         self.btn_back = tk.Button(self, text="Back",command=lambda:self.back(),font=('calibre',15,'normal'))
