@@ -1,8 +1,16 @@
+from unittest.util import _count_diff_all_purpose
 import pygame 
 import tkinter as tk
 from tkinter import filedialog, messagebox as mb, ttk
 from PIL import ImageTk, Image  
 from pathlib import Path
+
+
+def play_music(dir,volume):
+    pygame.mixer.init()
+    pygame.mixer.music.load(dir)
+    pygame.mixer.music.play()
+    pygame.mixer.music.set_volume(volume)
 
 class MainScreen(tk.Canvas):
     def __init__(self, parent):
@@ -10,11 +18,14 @@ class MainScreen(tk.Canvas):
         self.vol_val = 100
         self.sfx_val = 100
         # play music
-        url1 = str(Path(__file__).resolve().parent) + '\\music\\dokitheme.mp3'
-        pygame.mixer.init()
-        pygame.mixer.music.load(url1)
-        pygame.mixer.music.play()
-        
+        dir = str(Path(__file__).resolve().parent) + '\\music\\dokitheme.mp3'
+        play_music(dir,self.vol_val)
+        # save load tracking
+        fp = open(str(Path(__file__).resolve().parent) + '\\data\\save\\status.txt')
+        self.status = fp.read().split()
+        self.status = [int(value) for value in self.status]
+        self.isLoading = -1
+
         # import and draw background
         self.dir = str(Path(__file__).resolve().parent) + '\\img\\img1.png'
         self.image = Image.open(self.dir)
@@ -37,7 +48,6 @@ class MainScreen(tk.Canvas):
         self.btn_quit = tk.Button(self, text="Quit",command=lambda:self.Quit(parent),font=('calibre',15,'normal'))
         self.btn_quit.place_configure(x=400,y=530,width=150,height=60)
 
-        
     def Quit(self, master):
             # ask if wanna quit
             check = mb.askyesno(title='Quitting?',message='Are you sure about that?')
@@ -50,25 +60,20 @@ class MainScreen(tk.Canvas):
 class Start(tk.Canvas):
     def __init__(self,parent):
         tk.Canvas.__init__(self,parent,height=650,width=1000)
-        # import and draw background
-        dir = str(Path(__file__).resolve().parent) + '\\img\\img1.png'
-        image = Image.open(dir)
-        self.tkimg = ImageTk.PhotoImage(image)
         self.place(x=0,y=0)
-        self.create_image(0,0,anchor=tk.NW,image=self.tkimg)    
+        # import and draw background
+        # self.create_image(0,0,anchor=tk.NW,image=self.tkimg)    
             
-         # import and draw character
-        dir = str(Path(__file__).resolve().parent) + '\\img\\img2.png'
-        image = Image.open(dir)
-        self.tkimg2 = ImageTk.PhotoImage(image)
+        #  # import and draw character
+        # dir = str(Path(__file__).resolve().parent) + '\\img\\img2.png'
+        # image = Image.open(dir)
+        # self.tkimg2 = ImageTk.PhotoImage(image)
         self.character = tk.Canvas(self,height=343,width=650)
         self.character.place(x=150,y=100)
         # self.character.create_image(0,0,anchor=tk.NW,image=self.tkimg2) 
 
-        url2 = str(Path(__file__).resolve().parent) + '\\music\\dokigameplay.mp3'
-        pygame.mixer.init()
-        pygame.mixer.music.load(url2)
-        pygame.mixer.music.play()
+        dir = str(Path(__file__).resolve().parent) + '\\music\\dokigameplay.mp3'
+        play_music(dir,parent.vol_val)
 
         # dialog box
         self.T = tk.Text(self, height = 5, width = 105)
@@ -76,65 +81,87 @@ class Start(tk.Canvas):
         self.T.place_configure(x=30,y=450)
 
         # create buttons (place holder rn)
-        self.btn_back = tk.Button(self, text="Main menu",command=lambda:self.back(),font=('calibre',15,'normal'))
+        self.btn_back = tk.Button(self, text="Main menu",command=lambda:self.back(parent),font=('calibre',15,'normal'))
         self.btn_back.place_configure(x=30,y=30,width=150,height=60)
 
         # plan: save option, settings, skip (?), probs easter eggs (last priority) 
         self.Game_UI(parent)
         # bind in case of skipping a lot (WIP)
-        self.bind('<Button-1>',self.ChangeScene)
+        self.bind('<Button-1>',self.ChangeLine)
 
-    def back(self):
+    def back(self,parent):
         # check if progress is saved? remind if havent
         check = mb.askyesno(title='Back to main menu?',message='Game progress is not saved automatically and will be lost. Do you wanna proceed?')
         if check:
             self.place_forget()
-            url1 = str(Path(__file__).resolve().parent) + '\\music\\dokitheme.mp3'
-            pygame.mixer.init()
-            pygame.mixer.music.load(url1)
-            pygame.mixer.music.play()
+            dir = str(Path(__file__).resolve().parent) + '\\music\\dokitheme.mp3'
+            play_music(dir,parent.vol_val)
 
     # plan: save/load option, settings, skip (?), probs easter eggs (last priority) (WIP)
     def Game_UI(self,parent):
-        fs = open(str(Path(__file__).resolve().parent) + '\\scripts\\scene0002.txt')
-        self.scripts = fs.readlines()
+        self.cur_scene = "\\scripts\\scene0001.txt"
         self.pos = 0
-
-        self.btn_save = tk.Button(self, text="Save",command=lambda:Save(parent),font=('calibre',15,'normal'))
+        fs = open(str(Path(__file__).resolve().parent) + self.cur_scene,'r')
+        if parent.isLoading != -1:
+            if parent.status[parent.isLoading] == 1:
+                fs.close()
+                fs = open(str(Path(__file__).resolve().parent) + "\\data\\save\\game_save_" + str(parent.isLoading) + ".txt",'r')
+                line = fs.read().split('|')
+                self.cur_scene, self.pos = line 
+                self.pos = int(self.pos)
+                fs.close()
+                print("Loading...")
+            parent.isLoading = -1
+        fs = open(str(Path(__file__).resolve().parent) + self.cur_scene,'r')
+        self.scripts = fs.readlines()
+        fs.close()
+                
+        self.btn_save = tk.Button(self, text="Save",command=lambda:Save(self,parent),font=('calibre',15,'normal'))
         self.btn_save.place_configure(x=30,y=580,width=150,height=60)
-        self.btn_load = tk.Button(self, text="Load",command=lambda:Load(parent),font=('calibre',15,'normal'))
+        self.btn_load = tk.Button(self, text="Load",command=lambda:self.load_file(parent),font=('calibre',15,'normal'))
         self.btn_load.place_configure(x=215,y=580,width=150,height=60)
         self.btn_setting = tk.Button(self, text="Setting",command=lambda:Setting(parent),font=('calibre',15,'normal'))
         self.btn_setting.place_configure(x=400,y=580,width=150,height=60) 
         self.btn_skip = tk.Button(self, text="Skip",command=lambda:self.Skip(),font=('calibre',15,'normal'))
-        self.btn_skip.place_configure(x=800,y=580,width=150,height=60)    
+        self.btn_skip.place_configure(x=800,y=580,width=150,height=60)
 
     def UpdateImage(self, filename):
         dir = str(Path(__file__).resolve().parent) + '\\img\\' + filename
         image = Image.open(dir)
         return image        
 
-    def ChangeScene(self, event): #config char and/or bg
+    def ChangeLine(self, event): #config char and/or bg
         # bg    
+        if self.pos == len(self.scripts):
+            self.cur_scene = "\\scripts\\scene0002.txt"
+            self.pos = 0
+            fs = open(str(Path(__file__).resolve().parent) + self.cur_scene,'r')
+            self.scripts = fs.readlines()
+            fs.close()
+            
         tup = self.scripts[self.pos].split('\n')
         tup = tup[0].split('|')
         print(tup)
-        if len(tup) >= 1:
-            self.T.delete('1.0','end')
-            self.T.insert('1.0', tup[0])
-        if len(tup) >= 2:
-            image = self.UpdateImage(tup[1])
-            self.tkimg = ImageTk.PhotoImage(image)
-            self.create_image(0,0,anchor=tk.NW,image=self.tkimg)
-        if len(tup) == 3:
-            image = self.UpdateImage(tup[2])
-            self.tkimg2 = ImageTk.PhotoImage(image)
-            self.character = tk.Canvas(self,height=343,width=650)
-            self.character.place(x=150,y=100)
-            self.character.create_image(0,0,anchor=tk.NW,image=self.tkimg2)
-
+        
+        self.T.delete('1.0','end')
+        self.T.insert('1.0', tup[0])
+        
+        image = self.UpdateImage(tup[1])
+        self.tkimg = ImageTk.PhotoImage(image)
+        self.create_image(0,0,anchor=tk.NW,image=self.tkimg)
+        
+        image = self.UpdateImage(tup[2])
+        self.tkimg2 = ImageTk.PhotoImage(image)
+        self.character.create_image(0,0,anchor=tk.NW,image=self.tkimg2)
         self.pos += 1
 
+    # def ChangeScene(self, event):
+
+
+    def load_file(self,parent):
+        Load(parent)
+        print("selected")
+        self.place_forget()
 
     def Skip(self): #config char and/or bg
         # bg
@@ -158,15 +185,9 @@ class Start(tk.Canvas):
     # change dialog
     # effects on screen canvas?
 
-
-# Chad walks
-# éc éc. Chắc thế thui. Mà code music cũng chỉ có như v. Khi vào gameplay thì chuyển bài khác. :p
-
-#Here we go again
-
 class Save(tk.Canvas):
-    def __init__(self,parent):
-        tk.Canvas.__init__(self,parent,height=650,width=1000)
+    def __init__(self,parent, grand):
+        tk.Canvas.__init__(self,grand,height=650,width=1000)
         # import and draw background
         self.dir = str(Path(__file__).resolve().parent) + '\\img\\img1.png'
         self.image = Image.open(self.dir)
@@ -175,8 +196,7 @@ class Save(tk.Canvas):
         self.create_image(0,0,anchor=tk.NW,image=self.tkimg)      
 
         # plan: several slots to save game progress, probs easter eggs (last priority)  (WIP)
-        # okee có gì mai nhắn (gọi điện đe dọa)
-        # Sớm khi nào đi khi đó eyyy :)))
+        
         cre = tk.Label(self, text= "Where do you wanna save?", font =("Courier", 15))
         cre.place_configure(x=30,y=120,width=900,height=40)
 
@@ -185,7 +205,7 @@ class Save(tk.Canvas):
         for j in range(170,500,150):
             for i in range(30,900,300):
                 self.create_rectangle(i,j,i+300,j+150,width=4)
-                self.loadspace.append(tk.Button(self, text="Save_" + str(count),command=lambda:self.back(),font=('calibre',15,'normal')))
+                self.loadspace.append(tk.Button(self, text="Save_" + str(count),command=lambda idx = count:self.save_file(parent, grand, idx),font=('calibre',15,'normal')))
                 self.loadspace[count].place_configure(x=i,y=j,width=300,height=150)
                 count += 1
 
@@ -197,6 +217,24 @@ class Save(tk.Canvas):
     def back(self):
         self.place_forget()
 
+    def save_file(self, parent, grand, slot):
+        check = 1
+        if grand.status[slot] == 0:
+            grand.status[slot] = 1
+        else:
+            check = mb.askyesno(title="Override this slot?",message="Progress of this slot will be lost.. :(")
+
+        if check:
+            fp = open(str(Path(__file__).resolve().parent) + "\\data\\save\\game_save_" + str(slot) + ".txt",'w')
+            fp.write(parent.cur_scene + "|" + str(parent.pos-1))
+            fp.close()
+            mb.showinfo(title=">:D",message="Save successfully!")
+            
+        fp = open(str(Path(__file__).resolve().parent) + "\\data\\save\\status.txt",'w')
+        for iter in grand.status:
+            fp.write(str(iter) + " ")
+        fp.close()                
+    
 
 class Load(tk.Canvas): #similar to read file, do after Save to know file (WIP)
     def __init__(self,parent):
@@ -217,7 +255,10 @@ class Load(tk.Canvas): #similar to read file, do after Save to know file (WIP)
         for j in range(170,500,150):
             for i in range(30,900,300):
                 self.create_rectangle(i,j,i+300,j+150,width=4)
-                self.loadspace.append(tk.Button(self, text="Load_" + str(count),command=lambda:Start(parent),font=('calibre',15,'normal')))
+                self.loadspace.append(tk.Button(self, 
+                    text="Load_" + str(count),
+                    command=lambda idx = count:self.load_file(parent, idx),
+                    font=('calibre',15,'normal')))
                 self.loadspace[count].place_configure(x=i,y=j,width=300,height=150)
                 count += 1
         # create buttons
@@ -228,6 +269,9 @@ class Load(tk.Canvas): #similar to read file, do after Save to know file (WIP)
     def back(self):
         self.place_forget()
 
+    def load_file(self,parent, slot):
+        parent.isLoading = slot
+        Start(parent)
 
 class Setting(tk.Canvas):
     def __init__(self,parent):
@@ -274,6 +318,7 @@ class Setting(tk.Canvas):
     def vol_slider_changed(self, *args): 
         self.vol_val.config(text=int(self.vol_slider.get()))
 
+
     def sfx_slider_changed(self, *args):  
         self.sfx_val.config(text=int(self.sfx_slider.get()))
 
@@ -313,6 +358,7 @@ def main():
 
     ms = MainScreen(root)
     root.protocol("WM_DELETE_WINDOW",lambda:ms.Quit(root))
+    
     root.mainloop()
 
 if __name__ == "__main__":
