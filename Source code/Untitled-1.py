@@ -1,36 +1,62 @@
-from unittest.util import _count_diff_all_purpose
 import pygame 
 import tkinter as tk
 from tkinter import filedialog, messagebox as mb, ttk
 from PIL import ImageTk, Image  
 from pathlib import Path
+import time
 
+MAX_SLOT = 9
+PARENT_DIR = str(Path(__file__).resolve().parent)
 
 def play_music(dir,volume):
-    pygame.mixer.init()
     pygame.mixer.music.load(dir)
     pygame.mixer.music.play()
     pygame.mixer.music.set_volume(volume)
 
+class MiniWindow(tk.Canvas):
+    def __init__(self, parent):
+        tk.Canvas.__init__(self,parent,height=325,width=500)
+        self.place(x=150,y=250)
+        self.lb_info = tk.Label(self,text="Enter your name", font=('calibre',15,'normal'))
+        self.lb_info.place_configure(x=150,y=0,width=150,height=50)
+        self.name = tk.StringVar()
+        self.entry_info = tk.Entry(self,textvariable=self.name)
+        self.entry_info.place_configure(x=150,y=100,width=150,height=100)
+        self.entry_info.bind('<Return>',self.back)
+        
+    def back(self,event):
+        print(self.name.get())
+        self.place_forget()
+        
+
 class MainScreen(tk.Canvas):
     def __init__(self, parent):
         tk.Canvas.__init__(self,parent,height=650,width=1000)
+        self.place(x=0,y=0)
+
         self.vol_val = 100
         self.sfx_val = 100
         # play music
-        dir = str(Path(__file__).resolve().parent) + '\\music\\dokitheme.mp3'
+        dir = PARENT_DIR + '\\music\\dokitheme.mp3'
         play_music(dir,self.vol_val)
         # save load tracking
-        fp = open(str(Path(__file__).resolve().parent) + '\\data\\save\\status.txt')
-        self.status = fp.read().split()
-        self.status = [int(value) for value in self.status]
+        try:
+            fp = open(PARENT_DIR + '\\data\\save\\status.txt')
+        except FileNotFoundError:
+            fp = open(PARENT_DIR + '\\data\\save\\status.txt', 'w+')
+            fp.write("\n".join(["0|Empty" for i in range(MAX_SLOT)]))
+
+        self.status = fp.readlines()
+        fp.close()
+        self.status = [value.split('|') for value in self.status]
+        self.status = [[int(v1),v2.split('\n')[0]] for v1,v2 in self.status]
+        print(self.status)
         self.isLoading = -1
 
         # import and draw background
-        self.dir = str(Path(__file__).resolve().parent) + '\\img\\img1.png'
+        self.dir = PARENT_DIR + '\\img\\img1.png'
         self.image = Image.open(self.dir)
         self.tkimg = ImageTk.PhotoImage(self.image)
-        self.place(x=0,y=0)
         self.create_image(0,0,anchor=tk.NW,image=self.tkimg)
         # create buttons
         self.btn_start = tk.Button(self, text="Start",command=lambda:Start(self),font=('calibre',15,'normal'))
@@ -61,18 +87,20 @@ class Start(tk.Canvas):
     def __init__(self,parent):
         tk.Canvas.__init__(self,parent,height=650,width=1000)
         self.place(x=0,y=0)
+
+        
         # import and draw background
         # self.create_image(0,0,anchor=tk.NW,image=self.tkimg)    
             
         #  # import and draw character
-        # dir = str(Path(__file__).resolve().parent) + '\\img\\img2.png'
+        # dir = PARENT_DIR + '\\img\\img2.png'
         # image = Image.open(dir)
         # self.tkimg2 = ImageTk.PhotoImage(image)
         self.character = tk.Canvas(self,height=343,width=650)
         self.character.place(x=150,y=100)
         # self.character.create_image(0,0,anchor=tk.NW,image=self.tkimg2) 
 
-        dir = str(Path(__file__).resolve().parent) + '\\music\\dokigameplay.mp3'
+        dir = PARENT_DIR + '\\music\\dokigameplay.mp3'
         play_music(dir,parent.vol_val)
 
         # dialog box
@@ -89,30 +117,32 @@ class Start(tk.Canvas):
         # bind in case of skipping a lot (WIP)
         self.bind('<Button-1>',self.ChangeLine)
 
+        MiniWindow(self)
+
     def back(self,parent):
         # check if progress is saved? remind if havent
         check = mb.askyesno(title='Back to main menu?',message='Game progress is not saved automatically and will be lost. Do you wanna proceed?')
         if check:
             self.place_forget()
-            dir = str(Path(__file__).resolve().parent) + '\\music\\dokitheme.mp3'
+            dir = PARENT_DIR + '\\music\\dokitheme.mp3'
             play_music(dir,parent.vol_val)
 
     # plan: save/load option, settings, skip (?), probs easter eggs (last priority) (WIP)
     def Game_UI(self,parent):
         self.cur_scene = "\\scripts\\scene0001.txt"
         self.pos = 0
-        fs = open(str(Path(__file__).resolve().parent) + self.cur_scene,'r')
+        fs = open(PARENT_DIR + self.cur_scene,'r')
         if parent.isLoading != -1:
-            if parent.status[parent.isLoading] == 1:
+            if parent.status[parent.isLoading][0] == 1:
                 fs.close()
-                fs = open(str(Path(__file__).resolve().parent) + "\\data\\save\\game_save_" + str(parent.isLoading) + ".txt",'r')
+                fs = open(PARENT_DIR + "\\data\\save\\game_save_" + str(parent.isLoading) + ".txt",'r')
                 line = fs.read().split('|')
                 self.cur_scene, self.pos = line 
                 self.pos = int(self.pos)
                 fs.close()
                 print("Loading...")
             parent.isLoading = -1
-        fs = open(str(Path(__file__).resolve().parent) + self.cur_scene,'r')
+        fs = open(PARENT_DIR + self.cur_scene,'r')
         self.scripts = fs.readlines()
         fs.close()
                 
@@ -126,7 +156,7 @@ class Start(tk.Canvas):
         self.btn_skip.place_configure(x=800,y=580,width=150,height=60)
 
     def UpdateImage(self, filename):
-        dir = str(Path(__file__).resolve().parent) + '\\img\\' + filename
+        dir = PARENT_DIR + '\\img\\' + filename
         image = Image.open(dir)
         return image        
 
@@ -135,7 +165,7 @@ class Start(tk.Canvas):
         if self.pos == len(self.scripts):
             self.cur_scene = "\\scripts\\scene0002.txt"
             self.pos = 0
-            fs = open(str(Path(__file__).resolve().parent) + self.cur_scene,'r')
+            fs = open(PARENT_DIR + self.cur_scene,'r')
             self.scripts = fs.readlines()
             fs.close()
             
@@ -180,7 +210,6 @@ class Start(tk.Canvas):
 
         #dialog
         
-
     # change screen
     # change dialog
     # effects on screen canvas?
@@ -189,7 +218,7 @@ class Save(tk.Canvas):
     def __init__(self,parent, grand):
         tk.Canvas.__init__(self,grand,height=650,width=1000)
         # import and draw background
-        self.dir = str(Path(__file__).resolve().parent) + '\\img\\img1.png'
+        self.dir = PARENT_DIR + '\\img\\img1.png'
         self.image = Image.open(self.dir)
         self.tkimg = ImageTk.PhotoImage(self.image)
         self.place(x=0,y=0)
@@ -205,7 +234,7 @@ class Save(tk.Canvas):
         for j in range(170,500,150):
             for i in range(30,900,300):
                 self.create_rectangle(i,j,i+300,j+150,width=4)
-                self.loadspace.append(tk.Button(self, text="Save_" + str(count),command=lambda idx = count:self.save_file(parent, grand, idx),font=('calibre',15,'normal')))
+                self.loadspace.append(tk.Button(self, text="Save_" + str(count) + '\n' + grand.status[count][1] ,command=lambda idx = count:self.save_file(parent, grand, idx),font=('calibre',15,'normal')))
                 self.loadspace[count].place_configure(x=i,y=j,width=300,height=150)
                 count += 1
 
@@ -219,28 +248,32 @@ class Save(tk.Canvas):
 
     def save_file(self, parent, grand, slot):
         check = 1
-        if grand.status[slot] == 0:
-            grand.status[slot] = 1
+        if grand.status[slot][0] == 0:
+            grand.status[slot][0] = 1
         else:
             check = mb.askyesno(title="Override this slot?",message="Progress of this slot will be lost.. :(")
 
+
         if check:
-            fp = open(str(Path(__file__).resolve().parent) + "\\data\\save\\game_save_" + str(slot) + ".txt",'w')
+            grand.status[slot][1] = time.ctime()
+            fp = open(PARENT_DIR + "\\data\\save\\game_save_" + str(slot) + ".txt",'w')
             fp.write(parent.cur_scene + "|" + str(parent.pos-1))
             fp.close()
             mb.showinfo(title=">:D",message="Save successfully!")
             
-        fp = open(str(Path(__file__).resolve().parent) + "\\data\\save\\status.txt",'w')
-        for iter in grand.status:
-            fp.write(str(iter) + " ")
-        fp.close()                
+        fp = open(PARENT_DIR + "\\data\\save\\status.txt",'w')
+    
+        fp.write("\n".join([str(v1)+'|'+v2 for v1,v2 in grand.status]))
+        fp.close()
+        Save(parent,grand)
+        self.place_forget()                
     
 
 class Load(tk.Canvas): #similar to read file, do after Save to know file (WIP)
     def __init__(self,parent):
         tk.Canvas.__init__(self,parent,height=650,width=1000)
         # import and draw background
-        self.dir = str(Path(__file__).resolve().parent) + '\\img\\img1.png'
+        self.dir = PARENT_DIR + '\\img\\img1.png'
         self.image = Image.open(self.dir)
         self.tkimg = ImageTk.PhotoImage(self.image)
         self.place(x=0,y=0)
@@ -256,7 +289,7 @@ class Load(tk.Canvas): #similar to read file, do after Save to know file (WIP)
             for i in range(30,900,300):
                 self.create_rectangle(i,j,i+300,j+150,width=4)
                 self.loadspace.append(tk.Button(self, 
-                    text="Load_" + str(count),
+                    text="Load_" + str(count) + '\n' + parent.status[count][1],
                     command=lambda idx = count:self.load_file(parent, idx),
                     font=('calibre',15,'normal')))
                 self.loadspace[count].place_configure(x=i,y=j,width=300,height=150)
@@ -277,7 +310,7 @@ class Setting(tk.Canvas):
     def __init__(self,parent):
         tk.Canvas.__init__(self,parent,height=650,width=1000)
         # import and draw background
-        self.dir = str(Path(__file__).resolve().parent) + '\\img\\img1.png'
+        self.dir = PARENT_DIR + '\\img\\img1.png'
         self.image = Image.open(self.dir)
         self.tkimg = ImageTk.PhotoImage(self.image)
         self.place(x=0,y=0)
@@ -316,17 +349,21 @@ class Setting(tk.Canvas):
 
 
     def vol_slider_changed(self, *args): 
-        self.vol_val.config(text=int(self.vol_slider.get()))
+        val = int(self.vol_slider.get())
+        self.vol_val.config(text=val)
+        pygame.mixer.music.set_volume(val/100)
 
 
     def sfx_slider_changed(self, *args):  
-        self.sfx_val.config(text=int(self.sfx_slider.get()))
+        val = int(self.sfx_slider.get())
+        self.sfx_val.config(text=val)
+        pygame.mixer.music.set_volume(val/100)
 
 class Credit(tk.Canvas):
     def __init__(self,parent):
         tk.Canvas.__init__(self,parent,height=650,width=1000)
         # import and draw background
-        self.dir = str(Path(__file__).resolve().parent) + '\\img\\img1.png'
+        self.dir = PARENT_DIR + '\\img\\img1.png'
         self.image = Image.open(self.dir)
         self.tkimg = ImageTk.PhotoImage(self.image)
         self.place(x=0,y=0)
@@ -352,10 +389,12 @@ class Credit(tk.Canvas):
 def main():
     # create window
     root = tk.Tk()
+    #initialize pygame.mixer    
+    pygame.mixer.init()
     root.title("VISUAL NOVEL")
     root.geometry("1000x650+30+30")
     root.resizable(False,False)
-
+    
     ms = MainScreen(root)
     root.protocol("WM_DELETE_WINDOW",lambda:ms.Quit(root))
     
