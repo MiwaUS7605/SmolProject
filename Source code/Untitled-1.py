@@ -163,9 +163,20 @@ class Start(tk.Canvas):
     def ChangeLine(self, event): #config char and/or bg
         # bg    
         if self.pos == len(self.scripts):
-            self.cur_scene = "\\scripts\\scene0002.txt"
+            cs = self.cur_scene[:self.cur_scene.rfind("000")]
+            temp = self.cur_scene.split("000")[1].split(".")[0]
+            temp = str(int(temp) + 1)
+
+            self.cur_scene = cs + "000" + temp + ".txt"
+            
+                # temporary lim=9 --> how to create 0000 -> 9999 string
+            # self.cur_scene = "\\scripts\\scene0002.txt"
+
             self.pos = 0
             fs = open(PARENT_DIR + self.cur_scene,'r')
+            # if FileNotFoundError:
+            #     return
+                # stop changing line or scene when end
             self.scripts = fs.readlines()
             fs.close()
             
