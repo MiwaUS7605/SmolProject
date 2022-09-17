@@ -13,10 +13,15 @@ def play_music(dir,volume):
     pygame.mixer.music.play()
     pygame.mixer.music.set_volume(volume)
 
-class MiniWindow(tk.Canvas):
+class Entry(tk.Canvas):
     def __init__(self, parent):
         tk.Canvas.__init__(self,parent,height=325,width=500)
-        self.place(x=150,y=250)
+        self.dir = PARENT_DIR + '\\img\\pngwing.com.png'
+        self.image = Image.open(self.dir)
+        self.tkimg = ImageTk.PhotoImage(self.image)
+        self.place(x=250,y=150)
+        self.create_image(0,0,anchor=tk.NW,image=self.tkimg)     
+        
         self.lb_info = tk.Label(self,text="Enter your name", font=('calibre',15,'normal'))
         self.lb_info.place_configure(x=150,y=0,width=150,height=50)
         self.name = tk.StringVar()
@@ -27,6 +32,38 @@ class MiniWindow(tk.Canvas):
     def back(self,event):
         print(self.name.get())
         self.place_forget()
+
+class Options(tk.Canvas):
+    def __init__(self, parent):
+        tk.Canvas.__init__(self,parent,height=325,width=500)
+        self.dir = PARENT_DIR + '\\img\\img1.png'
+        self.image = Image.open(self.dir)
+        self.tkimg = ImageTk.PhotoImage(self.image)
+        self.place(x=250,y=150)
+        self.create_image(0,0,anchor=tk.NW,image=self.tkimg)     
+        
+        self.choice1 = tk.Button(self,text="1", font=('calibre',15,'normal'))
+        self.choice1.place_configure(x=150,y=30,width=150,height=100)
+
+        self.choice2 = tk.Button(self,text="2", font=('calibre',15,'normal'))
+        self.choice2.place_configure(x=150,y=200,width=150,height=100)
+
+        self.choice1.config(command=lambda:self.back())
+        self.choice2.config(command=lambda:self.change(parent))
+        
+    def back(self):
+        self.place_forget()    
+
+    def change(self, parent):
+        parent.cur_scene = '\\scripts\\scene0002.txt'
+        parent.pos = 0
+        fs = open(PARENT_DIR + parent.cur_scene,'r')
+            # if FileNotFoundError:
+            #     return
+                # stop changing line or scene when end
+        parent.scripts = fs.readlines()
+        fs.close()
+        self.back()
         
 
 class MainScreen(tk.Canvas):
@@ -117,8 +154,6 @@ class Start(tk.Canvas):
         # bind in case of skipping a lot (WIP)
         self.bind('<Button-1>',self.ChangeLine)
 
-        MiniWindow(self)
-
     def back(self,parent):
         # check if progress is saved? remind if havent
         check = mb.askyesno(title='Back to main menu?',message='Game progress is not saved automatically and will be lost. Do you wanna proceed?')
@@ -179,7 +214,10 @@ class Start(tk.Canvas):
                 # stop changing line or scene when end
             self.scripts = fs.readlines()
             fs.close()
-            
+        
+        if self.pos == 5:
+            Options(self)
+
         tup = self.scripts[self.pos].split('\n')
         tup = tup[0].split('|')
         print(tup)
@@ -409,7 +447,11 @@ def main():
     ms = MainScreen(root)
     root.protocol("WM_DELETE_WINDOW",lambda:ms.Quit(root))
     
+    # root2 = tk.Tk()
+    # root2.attributes('-alpha',0.5)
+    # root2.geometry("400x200+35+35")
     root.mainloop()
+    # root2.mainloop()
 
 if __name__ == "__main__":
     main()
