@@ -1,1 +1,1 @@
-\scripts\scene0001.txt|2
+0005|0

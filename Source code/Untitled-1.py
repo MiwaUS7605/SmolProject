@@ -42,30 +42,39 @@ class Options(tk.Canvas):
         self.place(x=250,y=150)
         self.create_image(0,0,anchor=tk.NW,image=self.tkimg)     
         
-        self.choice1 = tk.Button(self,text="1", font=('calibre',15,'normal'))
-        self.choice1.place_configure(x=150,y=30,width=150,height=100)
+        self.options = []
+        fp = open(PARENT_DIR + '\\scripts\\switch.txt')
+        info = fp.readlines()
+        x = 200 
+        y = 10
+        width = 150
+        height = 100
+        for line_info in info:
+            cur = line_info.split('|')
+            if parent.cur_scene == cur[0]:
+                cur.pop(0)
+                for idx in range(len(cur)):
+                    sth = cur[idx].split(":")
+                    self.options.append(tk.Button(self,text=sth[1], command=lambda id = sth[0]:self.change(parent,id)
+                                                    , font=('calibre',15,'normal')))
+                    self.options[idx].place_configure(x=x,y=y+idx*(height+50//len(cur)),width = width, height = height)
+                break
+            print(line_info)
+            
+        fp.close()
 
-        self.choice2 = tk.Button(self,text="2", font=('calibre',15,'normal'))
-        self.choice2.place_configure(x=150,y=200,width=150,height=100)
-
-        self.choice1.config(command=lambda:self.back())
-        self.choice2.config(command=lambda:self.change(parent))
-        
-    def back(self):
-        self.place_forget()    
-
-    def change(self, parent):
-        parent.cur_scene = '\\scripts\\scene0002.txt'
+    def change(self, parent, id):
+        parent.cur_scene = id
         parent.pos = 0
-        fs = open(PARENT_DIR + parent.cur_scene,'r')
+        fs = open(PARENT_DIR + '\\scripts\\scene' + parent.cur_scene + '.txt','r')
             # if FileNotFoundError:
             #     return
                 # stop changing line or scene when end
         parent.scripts = fs.readlines()
         fs.close()
-        self.back()
+        parent.Continue()
+        self.place_forget()
         
-
 class MainScreen(tk.Canvas):
     def __init__(self, parent):
         tk.Canvas.__init__(self,parent,height=650,width=1000)
@@ -125,7 +134,6 @@ class Start(tk.Canvas):
         tk.Canvas.__init__(self,parent,height=650,width=1000)
         self.place(x=0,y=0)
 
-        
         # import and draw background
         # self.create_image(0,0,anchor=tk.NW,image=self.tkimg)    
             
@@ -149,10 +157,17 @@ class Start(tk.Canvas):
         self.btn_back = tk.Button(self, text="Main menu",command=lambda:self.back(parent),font=('calibre',15,'normal'))
         self.btn_back.place_configure(x=30,y=30,width=150,height=60)
 
+        # bind for changing line
+        self.bind('<Button-1>',self.ChangeLine)
+
         # plan: save option, settings, skip (?), probs easter eggs (last priority) 
         self.Game_UI(parent)
-        # bind in case of skipping a lot (WIP)
-        self.bind('<Button-1>',self.ChangeLine)
+        self.Continue()
+
+    # manual click
+    def Continue(self):
+        self.event_generate('<Button-1>')        
+        self.update()    
 
     def back(self,parent):
         # check if progress is saved? remind if havent
@@ -162,25 +177,26 @@ class Start(tk.Canvas):
             dir = PARENT_DIR + '\\music\\dokitheme.mp3'
             play_music(dir,parent.vol_val)
 
-    # plan: save/load option, settings, skip (?), probs easter eggs (last priority) (WIP)
+    # plan: save/load option, settings, skip, probs easter eggs (last priority) (WIP)
     def Game_UI(self,parent):
-        self.cur_scene = "\\scripts\\scene0001.txt"
+        self.cur_scene = '0001'
         self.pos = 0
-        fs = open(PARENT_DIR + self.cur_scene,'r')
         if parent.isLoading != -1:
             if parent.status[parent.isLoading][0] == 1:
-                fs.close()
                 fs = open(PARENT_DIR + "\\data\\save\\game_save_" + str(parent.isLoading) + ".txt",'r')
                 line = fs.read().split('|')
-                self.cur_scene, self.pos = line 
-                self.pos = int(self.pos)
+                self.cur_scene, temp = line 
+                self.pos = int(temp)
                 fs.close()
                 print("Loading...")
             parent.isLoading = -1
-        fs = open(PARENT_DIR + self.cur_scene,'r')
+        fs = open(PARENT_DIR + '\\scripts\\scene' + self.cur_scene + '.txt','r')
         self.scripts = fs.readlines()
         fs.close()
-                
+
+        self.event_generate('<Button-1>')        
+        self.update()
+        
         self.btn_save = tk.Button(self, text="Save",command=lambda:Save(self,parent),font=('calibre',15,'normal'))
         self.btn_save.place_configure(x=30,y=580,width=150,height=60)
         self.btn_load = tk.Button(self, text="Load",command=lambda:self.load_file(parent),font=('calibre',15,'normal'))
@@ -190,6 +206,7 @@ class Start(tk.Canvas):
         self.btn_skip = tk.Button(self, text="Skip",command=lambda:self.Skip(),font=('calibre',15,'normal'))
         self.btn_skip.place_configure(x=800,y=580,width=150,height=60)
 
+
     def UpdateImage(self, filename):
         dir = PARENT_DIR + '\\img\\' + filename
         image = Image.open(dir)
@@ -198,25 +215,24 @@ class Start(tk.Canvas):
     def ChangeLine(self, event): #config char and/or bg
         # bg    
         if self.pos == len(self.scripts):
-            cs = self.cur_scene[:self.cur_scene.rfind("000")]
-            temp = self.cur_scene.split("000")[1].split(".")[0]
-            temp = str(int(temp) + 1)
+            # cs = self.cur_scene[:self.cur_scene.rfind("000")]
+            # temp = self.cur_scene.split("000")[1].split(".")[0]
+            # temp = str(int(temp) + 1)
 
-            self.cur_scene = cs + "000" + temp + ".txt"
+            # self.cur_scene = cs + "000" + temp + ".txt"
             
-                # temporary lim=9 --> how to create 0000 -> 9999 string
-            # self.cur_scene = "\\scripts\\scene0002.txt"
+            #     # temporary lim=9 --> how to create 0000 -> 9999 string
+            # # self.cur_scene = "\\scripts\\scene0002.txt"
 
-            self.pos = 0
-            fs = open(PARENT_DIR + self.cur_scene,'r')
-            # if FileNotFoundError:
-            #     return
-                # stop changing line or scene when end
-            self.scripts = fs.readlines()
-            fs.close()
+            # self.pos = 0
+            # fs = open(PARENT_DIR + self.cur_scene,'r')
+            # # if FileNotFoundError:
+            # #     return
+            #     # stop changing line or scene when end
+            # self.scripts = fs.readlines()
+            # fs.close()
+            Options(self)        
         
-        if self.pos == 5:
-            Options(self)
 
         tup = self.scripts[self.pos].split('\n')
         tup = tup[0].split('|')
@@ -234,9 +250,6 @@ class Start(tk.Canvas):
         self.character.create_image(0,0,anchor=tk.NW,image=self.tkimg2)
         self.pos += 1
 
-    # def ChangeScene(self, event):
-
-
     def load_file(self,parent):
         Load(parent)
         print("selected")
@@ -244,23 +257,11 @@ class Start(tk.Canvas):
 
     def Skip(self): #config char and/or bg
         # bg
-        image = self.UpdateImage('img4.png')
-        self.tkimg = ImageTk.PhotoImage(image)
-        self.create_image(0,0,anchor=tk.NW,image=self.tkimg)
-        #char
-        image = self.UpdateImage('img3.png')
-        self.tkimg2 = ImageTk.PhotoImage(image)
-        self.character = tk.Canvas(self,height=343,width=650)
-        self.character.place(x=150,y=100)
-        self.character.create_image(0,0,anchor=tk.NW,image=self.tkimg2)
-        #dialog
-        self.T.insert('1.0', "Oh? Are you skipping? ")
-        #char
-
-        #dialog
+        while(self.pos != len(self.scripts)):
+            self.Continue()
         
-    # change screen
-    # change dialog
+        self.Continue()
+        
     # effects on screen canvas?
 
 class Save(tk.Canvas):
@@ -301,7 +302,6 @@ class Save(tk.Canvas):
             grand.status[slot][0] = 1
         else:
             check = mb.askyesno(title="Override this slot?",message="Progress of this slot will be lost.. :(")
-
 
         if check:
             grand.status[slot][1] = time.ctime()
